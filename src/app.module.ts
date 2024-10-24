@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './auth/auth.module'
-import { User } from './entities/User'
+import { User, Expense } from './entities/'
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { User } from './entities/User'
       username: 'root',
       password: '6442340710juan1',
       synchronize: true,
-      entities: [User],
+      entities: [User, Expense],
       database: 'trackerlist',
     }),
     ConfigModule.forRoot({ isGlobal: true }),

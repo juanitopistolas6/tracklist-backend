@@ -3,9 +3,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import bcrypt from 'bcrypt'
+import { Expense } from './Expense'
 
 @Entity('user')
 export class User {
@@ -21,11 +23,26 @@ export class User {
   @Column()
   name: string
 
+  @Column('simple-array')
+  paymentDays: number[]
+
+  @Column({ nullable: false })
+  paymentFrequency: 'weekly' | 'biweekly'
+
+  @Column({ default: 0, type: 'float' })
+  salary: number
+
   @Column({ unique: true })
   user: string
 
+  @Column({ type: 'float' })
+  balance: number
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
+
+  @OneToMany(() => Expense, (expense) => expense.author)
+  posts: Expense[]
 
   @BeforeInsert()
   async generateColumns() {
