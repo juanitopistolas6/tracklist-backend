@@ -1,8 +1,8 @@
-import { HttpStatus, Injectable } from '@nestjs/common'
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import jwt from 'jsonwebtoken'
+import * as jwt from 'jsonwebtoken'
 import { IResponse, IFormateDataParams } from '../interfaces'
-import bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class SomeService {
@@ -14,8 +14,18 @@ export class SomeService {
     })
   }
 
-  async generatePassword(passowrd: string, salt: string) {
-    return await bcrypt.hash(passowrd, salt)
+  async generatePassword(password: string, salt: string) {
+    return bcrypt.hash(password, salt)
+  }
+
+  async verifySignature(token: string) {
+    try {
+      const payload = jwt.verify(token, this.config.get('SECRET_KEY'))
+
+      return payload
+    } catch (e) {
+      throw new UnauthorizedException(e.message)
+    }
   }
 
   async verifyPassword(

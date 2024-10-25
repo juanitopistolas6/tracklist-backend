@@ -1,8 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { User } from 'src/entities'
-import { ILogin } from 'src/interfaces/login'
+import { User } from '../entities'
 import { Repository } from 'typeorm'
+import { UserDto } from 'src/dto/user.dto'
 
 @Injectable()
 export class AuthService {
@@ -20,5 +24,17 @@ export class AuthService {
     if (!client) throw new UnauthorizedException()
 
     return client
+  }
+
+  async createUser(user: UserDto) {
+    try {
+      const newUser = this.userRepository.create({ ...user })
+
+      await this.userRepository.save(newUser)
+
+      return newUser
+    } catch (e) {
+      throw new BadRequestException(e.message)
+    }
   }
 }

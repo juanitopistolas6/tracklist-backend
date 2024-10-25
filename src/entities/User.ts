@@ -6,7 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt'
 import { Expense } from './Expense'
 
 @Entity('user')

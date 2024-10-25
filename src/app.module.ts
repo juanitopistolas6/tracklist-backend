@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './auth/auth.module'
 import { User, Expense } from './entities/'
+import { UserModule } from './user/user.module'
+import { ExpenseModule } from './expense/expense.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { User, Expense } from './entities/'
     }),
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
+    UserModule,
+    ExpenseModule,
   ],
 })
 export class AppModule {}

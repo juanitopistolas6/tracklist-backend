@@ -20,7 +20,7 @@ export class Expense {
   amount: number
 
   @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date
+  expenseDate: Date
 
   @ManyToOne(() => User)
   @JoinColumn()
