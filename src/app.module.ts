@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './auth/auth.module'
 import { User, Expense } from './entities/'
 import { UserModule } from './user/user.module'
-import { ExpenseModule } from './expense/expense.module';
+import { ExpenseModule } from './expense/expense.module'
 
 @Module({
   imports: [

@@ -19,6 +19,9 @@ export class Expense {
   @Column({ nullable: false })
   amount: number
 
+  @Column({ nullable: true, default: true })
+  available: boolean
+
   @CreateDateColumn({ type: 'timestamp' })
   expenseDate: Date
 
