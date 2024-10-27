@@ -9,7 +9,7 @@ export class SomeService {
   constructor(private config: ConfigService) {}
 
   async generateSignature(payload: object) {
-    return jwt.sign(payload, this.config.get('SECRET_KEY'), {
+    return jwt.sign({ payload }, this.config.get('SECRET_KEY'), {
       expiresIn: '1d',
     })
   }

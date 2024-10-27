@@ -29,6 +29,7 @@ export class ExpenseController {
     @GetUser('id') id: string,
   ) {
     try {
+      console.log(`id: ${id}`)
       const expense = await this.expenseService.createExpense(expenseDto, id)
 
       return this.someService.FormateData<IExpense>({

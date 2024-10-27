@@ -25,7 +25,7 @@ export class Expense {
   @CreateDateColumn({ type: 'timestamp' })
   expenseDate: Date
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn()
   author: User
 }

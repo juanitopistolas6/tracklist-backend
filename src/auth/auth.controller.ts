@@ -56,7 +56,7 @@ export class AuthController {
     delete client.password
     delete client.salt
 
-    const token = await this.someService.generateSignature({ client })
+    const token = await this.someService.generateSignature(client)
 
     return this.someService.FormateData<Token>({
       data: { token, user: client },
