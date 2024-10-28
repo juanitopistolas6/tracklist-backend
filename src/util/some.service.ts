@@ -9,7 +9,7 @@ export class SomeService {
   constructor(private config: ConfigService) {}
 
   async generateSignature(payload: object) {
-    return jwt.sign({ payload }, this.config.get('SECRET_KEY'), {
+    return jwt.sign(payload, this.config.get('SECRET_KEY'), {
       expiresIn: '1d',
     })
   }
@@ -20,9 +20,7 @@ export class SomeService {
 
   async verifySignature(token: string) {
     try {
-      const payload = jwt.verify(token, this.config.get('SECRET_KEY'))
-
-      return payload
+      return jwt.verify(token, this.config.get('SECRET_KEY'))
     } catch (e) {
       throw new UnauthorizedException(e.message)
     }

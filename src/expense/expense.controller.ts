@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Put,
@@ -22,6 +23,35 @@ export class ExpenseController {
     private expenseService: ExpenseService,
   ) {}
 
+  @Get()
+  @Authorization(true)
+  async getExpenses(@GetUser('id') idAuthor: string) {
+    const expenses = await this.expenseService.Expenses(idAuthor)
+
+    return this.someService.FormateData<IExpense[]>({
+      data: expenses,
+      message: 'EXPENSES_RETURNED',
+    })
+  }
+
+  @Get(':id')
+  @Authorization(true)
+  async getExpense(
+    @Param('id') idExpense: string,
+    @GetUser('id') idAuthor: string,
+  ) {
+    try {
+      const expense = await this.expenseService.getExpense(idExpense, idAuthor)
+
+      return this.someService.FormateData<IExpense>({
+        data: expense,
+        message: 'EXPENSE_RETURNED',
+      })
+    } catch (e) {
+      return this.someService.FormateData({ error: true, message: e.message })
+    }
+  }
+
   @Post()
   @Authorization(true)
   async createExpense(
@@ -29,7 +59,6 @@ export class ExpenseController {
     @GetUser('id') id: string,
   ) {
     try {
-      console.log(`id: ${id}`)
       const expense = await this.expenseService.createExpense(expenseDto, id)
 
       return this.someService.FormateData<IExpense>({
@@ -51,8 +80,8 @@ export class ExpenseController {
     try {
       const expenseEdit = await this.expenseService.editExpense(
         expense,
-        id,
         idUser,
+        id,
       )
 
       return this.someService.FormateData<IExpense>({

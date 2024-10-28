@@ -14,6 +14,12 @@ export class ExpenseService {
     @InjectRepository(Expense) private expenseRepository: Repository<Expense>,
   ) {}
 
+  async Expenses(idAuthor: string) {
+    return this.expenseRepository.find({
+      where: { author: { id: idAuthor }, available: true },
+    })
+  }
+
   async createExpense(object: ICreateExpense, id: string) {
     try {
       const expense = this.expenseRepository.create({
@@ -42,7 +48,7 @@ export class ExpenseService {
   async getExpense(id: string, authorId: string) {
     try {
       const client = await this.expenseRepository.findOne({
-        where: { author: { id: authorId }, id, available: true },
+        where: { id, available: true, author: { id: authorId } },
       })
 
       if (!client) throw new NotFoundException('Expense not found')
