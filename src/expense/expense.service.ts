@@ -4,14 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Expense } from 'src/entities'
+import { Expense, User } from 'src/entities'
+import { ExpenseTypes, IDateInterval } from 'src/interfaces'
 import { ICreateExpense } from 'src/interfaces/expense'
-import { Repository } from 'typeorm'
+import { Between, DataSource, Repository } from 'typeorm'
 
 @Injectable()
 export class ExpenseService {
   constructor(
     @InjectRepository(Expense) private expenseRepository: Repository<Expense>,
+    @InjectRepository(User) private userRepository: Repository<User>,
+    private dataSource: DataSource,
   ) {}
 
   async Expenses(idAuthor: string) {
@@ -22,12 +25,108 @@ export class ExpenseService {
 
   async createExpense(object: ICreateExpense, id: string) {
     try {
+      const user = await this.userRepository.findOne({ where: { id } })
+
+      if (object.amount > user.balance && object.type == 'transfer')
+        throw new BadRequestException('Insufficient Funds')
+
       const expense = this.expenseRepository.create({
         ...object,
         author: { id },
       })
 
-      await this.expenseRepository.save(expense)
+      return this.handleExpense(object.type, user, expense)
+    } catch (e) {
+      throw new BadRequestException(e.message)
+    }
+  }
+
+  async handleExpense(type: ExpenseTypes, user: User, expense: Expense) {
+    const queryRunner = this.dataSource.createQueryRunner()
+
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+
+    try {
+      if (!user || !expense) throw new NotFoundException('Data not found')
+
+      let balance: number
+
+      switch (type) {
+        case 'delete': {
+          balance =
+            expense.type == 'deposit'
+              ? user.balance - expense.amount
+              : user.balance + expense.amount
+
+          expense.available = false
+
+          break
+        }
+        case 'deposit': {
+          balance = expense.amount + user.balance
+
+          break
+        }
+        case 'transfer': {
+          balance = user.balance - expense.amount
+
+          break
+        }
+      }
+
+      await queryRunner.manager.save(expense)
+      await queryRunner.manager.save(User, { ...user, balance })
+
+      await queryRunner.commitTransaction()
+
+      return expense
+    } catch (e) {
+      await queryRunner.rollbackTransaction()
+
+      throw new BadRequestException(e.message)
+    } finally {
+      await queryRunner.release()
+    }
+  }
+
+  async expenseByDate(date: Date, idAuthor: string) {
+    const startOfDay = new Date(date)
+    startOfDay.setHours(0, 0, 0, 0)
+
+    const endOfDay = new Date(date)
+    endOfDay.setHours(23, 59, 59, 999)
+
+    const expense = await this.expenseRepository.find({
+      where: {
+        expenseDate: Between(startOfDay, endOfDay),
+        available: true,
+        author: { id: idAuthor },
+      },
+    })
+
+    if (expense.length < 1)
+      throw new NotFoundException('Expense not found in that date')
+
+    return expense
+  }
+
+  async expensesDates(intervalDates: IDateInterval, idAuthor: string) {
+    const { endDate, startDate } = intervalDates
+
+    try {
+      const expense = await this.expenseRepository.find({
+        where: {
+          expenseDate: Between(startDate, endDate),
+          author: { id: idAuthor },
+          available: true,
+        },
+      })
+
+      if (!expense)
+        throw new NotFoundException(
+          'No expenses were found between that interval',
+        )
 
       return expense
     } catch (e) {
@@ -37,9 +136,10 @@ export class ExpenseService {
 
   async deleteExpense(authorId: string, id: string) {
     try {
+      const user = await this.userRepository.findOne({ where: { id } })
       const expense = await this.getExpense(id, authorId)
 
-      return this.expenseRepository.save({ ...expense, available: false })
+      return this.handleExpense('delete', user, expense)
     } catch (e) {
       throw new BadRequestException(e.message)
     }

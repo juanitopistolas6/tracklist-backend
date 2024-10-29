@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common'
 import { AuthGuard } from '../guards/auth.guard'
@@ -13,7 +14,8 @@ import { SomeService } from '../util/some.service'
 import { ExpenseService } from './expense.service'
 import { Authorization, GetUser } from '../decorator'
 import { ExpenseDto } from '../dto/expense.dto'
-import { IExpense } from '../interfaces/expense'
+import { DateExpense, DateQueryDto } from 'src/dto'
+import { Expense } from 'src/entities'
 
 @Controller('expense')
 @UseGuards(AuthGuard)
@@ -28,10 +30,50 @@ export class ExpenseController {
   async getExpenses(@GetUser('id') idAuthor: string) {
     const expenses = await this.expenseService.Expenses(idAuthor)
 
-    return this.someService.FormateData<IExpense[]>({
+    return this.someService.FormateData<Expense[]>({
       data: expenses,
       message: 'EXPENSES_RETURNED',
     })
+  }
+
+  @Get('date')
+  @Authorization(true)
+  async getExpenseByDate(
+    @Query() dateQuery: DateExpense,
+    @GetUser('id') idAuthor: string,
+  ) {
+    const { date } = dateQuery
+    try {
+      const expense = await this.expenseService.expenseByDate(date, idAuthor)
+
+      return this.someService.FormateData<Expense[]>({
+        data: expense,
+        message: 'EXPENSE_FOUND',
+      })
+    } catch (e) {
+      return this.someService.FormateData({ error: true, message: e.message })
+    }
+  }
+
+  @Get('interval')
+  @Authorization(true)
+  async getExpensesInterval(
+    @Query() intervalExpense: DateQueryDto,
+    @GetUser('id') idAuthor: string,
+  ) {
+    try {
+      const expenses = await this.expenseService.expensesDates(
+        intervalExpense,
+        idAuthor,
+      )
+
+      return this.someService.FormateData<Expense[]>({
+        data: expenses,
+        message: 'EXPENSES_FOUND',
+      })
+    } catch (e) {
+      return this.someService.FormateData({ error: true, message: e.message })
+    }
   }
 
   @Get(':id')
@@ -43,7 +85,7 @@ export class ExpenseController {
     try {
       const expense = await this.expenseService.getExpense(idExpense, idAuthor)
 
-      return this.someService.FormateData<IExpense>({
+      return this.someService.FormateData<Expense>({
         data: expense,
         message: 'EXPENSE_RETURNED',
       })
@@ -61,7 +103,7 @@ export class ExpenseController {
     try {
       const expense = await this.expenseService.createExpense(expenseDto, id)
 
-      return this.someService.FormateData<IExpense>({
+      return this.someService.FormateData<Expense>({
         data: expense,
         message: 'EXPENSE_CREATED',
       })
@@ -84,7 +126,7 @@ export class ExpenseController {
         id,
       )
 
-      return this.someService.FormateData<IExpense>({
+      return this.someService.FormateData<Expense>({
         data: expenseEdit,
         message: 'EXPENSE_EDITED',
       })
@@ -105,7 +147,7 @@ export class ExpenseController {
         idExpense,
       )
 
-      return this.someService.FormateData<IExpense>({
+      return this.someService.FormateData<Expense>({
         data: expenseDeleted,
         message: 'EXPENSE_DELETED',
       })

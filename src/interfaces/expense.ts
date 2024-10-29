@@ -2,6 +2,8 @@ import { User } from '../entities'
 
 export interface ICreateExpense {
   description: string
+  expenseDate?: Date
+  type?: 'transfer' | 'deposit'
   amount: number
 }
 

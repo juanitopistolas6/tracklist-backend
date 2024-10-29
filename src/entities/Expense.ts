@@ -22,6 +22,9 @@ export class Expense {
   @Column({ nullable: true, default: true })
   available: boolean
 
+  @Column({ nullable: true, default: 'expense' })
+  type: 'transfer' | 'deposit' | 'expense'
+
   @CreateDateColumn({ type: 'timestamp' })
   expenseDate: Date
 
