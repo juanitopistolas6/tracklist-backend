@@ -5,9 +5,11 @@ import { AuthModule } from './auth/auth.module'
 import { User, Expense } from './entities/'
 import { UserModule } from './user/user.module'
 import { ExpenseModule } from './expense/expense.module'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',

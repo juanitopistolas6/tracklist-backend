@@ -14,8 +14,9 @@ import { SomeService } from '../util/some.service'
 import { ExpenseService } from './expense.service'
 import { Authorization, GetUser } from '../decorator'
 import { ExpenseDto } from '../dto/expense.dto'
-import { DateExpense, DateQueryDto } from 'src/dto'
-import { Expense } from 'src/entities'
+import { DateExpense, DateQueryDto } from '../dto'
+import { Expense } from '../entities'
+import { CronService } from '../util'
 
 @Controller('expense')
 @UseGuards(AuthGuard)
@@ -23,6 +24,7 @@ export class ExpenseController {
   constructor(
     private someService: SomeService,
     private expenseService: ExpenseService,
+    private cronService: CronService,
   ) {}
 
   @Get()
@@ -34,6 +36,18 @@ export class ExpenseController {
       data: expenses,
       message: 'EXPENSES_RETURNED',
     })
+  }
+
+  @Get('jobs')
+  @Authorization(true)
+  async getJobs() {
+    return this.cronService.getCronJobs()
+  }
+
+  @Get('server-date')
+  @Authorization(false)
+  async getDate() {
+    return new Date().toLocaleString()
   }
 
   @Get('date')

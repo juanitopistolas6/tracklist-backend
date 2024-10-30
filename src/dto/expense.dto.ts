@@ -19,8 +19,8 @@ export class ExpenseDto {
   expenseDate?: Date
 
   @IsOptional()
-  @IsEnum(['transfer', 'deposit'])
-  type?: 'transfer' | 'deposit'
+  @IsEnum(['transfer', 'deposit', 'expense'])
+  type?: 'transfer' | 'deposit' | 'expense'
 
   @IsNotEmpty()
   @IsNumber()

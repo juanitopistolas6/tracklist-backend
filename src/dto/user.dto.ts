@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsEnum,
   IsNotEmpty,
@@ -38,5 +40,8 @@ export class UserDto {
 
   @IsNotEmpty()
   @IsArray()
+  @IsNumber({}, { each: true })
+  @ArrayMinSize(1)
+  @ArrayMaxSize(2)
   paymentDays: number[]
 }

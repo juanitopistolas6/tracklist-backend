@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Expense, User } from 'src/entities'
 import { ExpenseTypes, IDateInterval } from 'src/interfaces'
 import { ICreateExpense } from 'src/interfaces/expense'
+import { CronService } from 'src/util'
 import { Between, DataSource, Repository } from 'typeorm'
 
 @Injectable()
@@ -14,6 +15,7 @@ export class ExpenseService {
   constructor(
     @InjectRepository(Expense) private expenseRepository: Repository<Expense>,
     @InjectRepository(User) private userRepository: Repository<User>,
+    private cronService: CronService,
     private dataSource: DataSource,
   ) {}
 
@@ -24,16 +26,34 @@ export class ExpenseService {
   }
 
   async createExpense(object: ICreateExpense, id: string) {
+    let user: User
+    let expense: Expense
+    let name: string
+
     try {
-      const user = await this.userRepository.findOne({ where: { id } })
+      user = await this.userRepository.findOne({ where: { id } })
 
       if (object.amount > user.balance && object.type == 'transfer')
         throw new BadRequestException('Insufficient Funds')
 
-      const expense = this.expenseRepository.create({
+      expense = this.expenseRepository.create({
         ...object,
         author: { id },
       })
+
+      if (object.expenseDate) {
+        name = `${expense.type} pay/deposit, expense: ${expense.id} `
+
+        await this.cronService.createDateCronJob(
+          name,
+          async () => {
+            await this.cronExpense(user, expense)
+          },
+          expense.expenseDate,
+        )
+
+        return expense
+      }
 
       return this.handleExpense(object.type, user, expense)
     } catch (e) {
@@ -68,6 +88,7 @@ export class ExpenseService {
 
           break
         }
+        case 'expense':
         case 'transfer': {
           balance = user.balance - expense.amount
 
@@ -170,6 +191,20 @@ export class ExpenseService {
       return this.expenseRepository.save({ ...expense, ...expenseEdit })
     } catch (e) {
       throw new BadRequestException(e.message)
+    }
+  }
+
+  async cronExpense(user: User, expense: Expense) {
+    try {
+      const balance =
+        expense.type == 'deposit'
+          ? user.balance + expense.amount
+          : user.balance - expense.amount
+
+      console.log('CronExpense executting....')
+      await this.userRepository.save({ ...user, balance })
+    } catch (e) {
+      console.log(e.message)
     }
   }
 }

@@ -7,11 +7,13 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../entities'
 import { Repository } from 'typeorm'
 import { UserDto } from 'src/dto/user.dto'
+import { CronService } from 'src/util'
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private cronService: CronService,
   ) {}
 
   async User(user: string) {
@@ -27,12 +29,33 @@ export class AuthService {
   }
 
   async createUser(user: UserDto) {
+    let newUser: User
+    let name: string
+
     try {
-      const newUser = this.userRepository.create({ ...user })
+      newUser = this.userRepository.create({ ...user })
 
       await this.userRepository.save(newUser)
 
+      name = `${user.paymentFrequency} pay to ${user.name}`
+
+      await this.cronService.createCronJob(
+        newUser,
+        async () => this.cronPayemnt(newUser, user.salary),
+        name,
+      )
+
       return newUser
+    } catch (e) {
+      throw new BadRequestException(e.message)
+    }
+  }
+
+  async cronPayemnt(user: User, amount: number) {
+    try {
+      const balance = user.balance + amount
+
+      await this.userRepository.save({ ...user, balance })
     } catch (e) {
       throw new BadRequestException(e.message)
     }
