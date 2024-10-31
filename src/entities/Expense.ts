@@ -23,7 +23,7 @@ export class Expense {
   available: boolean
 
   @Column({ nullable: true, default: 'expense' })
-  type: 'transfer' | 'deposit' | 'expense'
+  type: 'transfer' | 'deposit' | 'expense' | 'saving'
 
   @CreateDateColumn({ type: 'timestamp' })
   expenseDate: Date

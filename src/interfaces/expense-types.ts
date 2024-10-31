@@ -1,1 +1,6 @@
-export type ExpenseTypes = 'delete' | 'transfer' | 'deposit' | 'expense'
+export type ExpenseTypes =
+  | 'delete'
+  | 'transfer'
+  | 'deposit'
+  | 'expense'
+  | 'saving'

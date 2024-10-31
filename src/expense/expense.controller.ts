@@ -38,18 +38,6 @@ export class ExpenseController {
     })
   }
 
-  @Get('jobs')
-  @Authorization(true)
-  async getJobs() {
-    return this.cronService.getCronJobs()
-  }
-
-  @Get('server-date')
-  @Authorization(false)
-  async getDate() {
-    return new Date().toLocaleString()
-  }
-
   @Get('date')
   @Authorization(true)
   async getExpenseByDate(

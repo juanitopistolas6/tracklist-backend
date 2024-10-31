@@ -83,6 +83,7 @@ export class ExpenseService {
 
           break
         }
+        case 'saving':
         case 'deposit': {
           balance = expense.amount + user.balance
 
