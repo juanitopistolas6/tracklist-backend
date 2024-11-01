@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './auth/auth.module'
-import { User, Expense } from './entities/'
+import { User, Expense, Saving } from './entities'
 import { UserModule } from './user/user.module'
 import { ExpenseModule } from './expense/expense.module'
 import { ScheduleModule } from '@nestjs/schedule'
@@ -17,7 +17,7 @@ import { ScheduleModule } from '@nestjs/schedule'
       username: 'root',
       password: '6442340710juan1',
       synchronize: true,
-      entities: [User, Expense],
+      entities: [User, Expense, Saving],
       database: 'trackerlist',
     }),
     ConfigModule.forRoot({ isGlobal: true }),

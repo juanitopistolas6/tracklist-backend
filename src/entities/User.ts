@@ -38,6 +38,12 @@ export class User {
   @Column({ type: 'float' })
   balance: number
 
+  @Column({ type: 'boolean', default: false, nullable: true })
+  is_saving: boolean
+
+  @Column({ type: 'float', default: 0, nullable: true })
+  savings: number
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
 

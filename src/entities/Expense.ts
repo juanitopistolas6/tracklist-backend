@@ -16,7 +16,7 @@ export class Expense {
   @Column({ nullable: false, type: 'varchar', length: 255 })
   description: string
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, type: 'float' })
   amount: number
 
   @Column({ nullable: true, default: true })
@@ -24,6 +24,9 @@ export class Expense {
 
   @Column({ nullable: true, default: 'expense' })
   type: 'transfer' | 'deposit' | 'expense' | 'saving'
+
+  @Column({ nullable: true, default: 'success' })
+  status: 'pending' | 'success'
 
   @CreateDateColumn({ type: 'timestamp' })
   expenseDate: Date

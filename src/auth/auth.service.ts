@@ -41,7 +41,7 @@ export class AuthService {
 
       await this.cronService.createCronJob(
         newUser,
-        async () => this.cronPayemnt(newUser, user.salary),
+        async () => this.cronPayemnt(),
         name,
       )
 
@@ -51,13 +51,7 @@ export class AuthService {
     }
   }
 
-  async cronPayemnt(user: User, amount: number) {
-    try {
-      const balance = user.balance + amount
-
-      await this.userRepository.save({ ...user, balance })
-    } catch (e) {
-      throw new BadRequestException(e.message)
-    }
+  async cronPayemnt() {
+    // TODO
   }
 }

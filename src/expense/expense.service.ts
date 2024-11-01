@@ -43,16 +43,15 @@ export class ExpenseService {
 
       if (object.expenseDate) {
         name = `${expense.type} pay/deposit, expense: ${expense.id} `
+        expense.status = 'pending'
 
         await this.cronService.createDateCronJob(
           name,
           async () => {
-            await this.cronExpense(user, expense)
+            await this.cronExpense(user.id, expense.id)
           },
           expense.expenseDate,
         )
-
-        return expense
       }
 
       return this.handleExpense(object.type, user, expense)
@@ -70,35 +69,21 @@ export class ExpenseService {
     try {
       if (!user || !expense) throw new NotFoundException('Data not found')
 
-      let balance: number
+      if (expense.status == 'pending') {
+        await queryRunner.manager.save(User, user)
+        await queryRunner.manager.save(Expense, expense)
 
-      switch (type) {
-        case 'delete': {
-          balance =
-            expense.type == 'deposit'
-              ? user.balance - expense.amount
-              : user.balance + expense.amount
+        await queryRunner.commitTransaction()
 
-          expense.available = false
-
-          break
-        }
-        case 'saving':
-        case 'deposit': {
-          balance = expense.amount + user.balance
-
-          break
-        }
-        case 'expense':
-        case 'transfer': {
-          balance = user.balance - expense.amount
-
-          break
-        }
+        return expense
       }
 
+      expense.available = type !== 'delete'
+
+      const { balance, savings } = this.calculateBalances(user, expense, type)
+
       await queryRunner.manager.save(expense)
-      await queryRunner.manager.save(User, { ...user, balance })
+      await queryRunner.manager.save(User, { ...user, balance, savings })
 
       await queryRunner.commitTransaction()
 
@@ -110,6 +95,24 @@ export class ExpenseService {
     } finally {
       await queryRunner.release()
     }
+  }
+
+  calculateBalances(user: User, expense: Expense, type: ExpenseTypes) {
+    const adjusment = this.getBalanceAdjustment(expense, type)
+
+    const balance = user.balance + (expense.type === 'saving' ? 0 : adjusment)
+    const savings = user.savings + (expense.type === 'saving' ? adjusment : 0)
+
+    return { balance, savings }
+  }
+
+  getBalanceAdjustment(expense: Expense, type: ExpenseTypes): number {
+    const adjusment =
+      expense.type == 'deposit' || expense.type == 'saving'
+        ? expense.amount
+        : -expense.amount
+
+    return type == 'delete' ? -adjusment : adjusment
   }
 
   async expenseByDate(date: Date, idAuthor: string) {
@@ -195,15 +198,15 @@ export class ExpenseService {
     }
   }
 
-  async cronExpense(user: User, expense: Expense) {
+  async cronExpense(userId: string, expenseId: string) {
     try {
-      const balance =
-        expense.type == 'deposit'
-          ? user.balance + expense.amount
-          : user.balance - expense.amount
+      const expense = await this.getExpense(expenseId, userId)
 
-      console.log('CronExpense executting....')
-      await this.userRepository.save({ ...user, balance })
+      const user = await this.userRepository.findOne({ where: { id: userId } })
+
+      expense.status = 'success'
+
+      return this.handleExpense(expense.type, user, expense)
     } catch (e) {
       console.log(e.message)
     }
