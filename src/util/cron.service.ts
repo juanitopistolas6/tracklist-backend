@@ -63,7 +63,7 @@ export class CronService {
         cronTime,
         async function () {
           try {
-            await callback
+            await callback()
             console.log('ejecutado?')
           } catch (e) {
             this.logger.log(e.message)

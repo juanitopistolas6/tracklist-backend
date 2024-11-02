@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import * as jwt from 'jsonwebtoken'
-import { IResponse, IFormateDataParams } from '../interfaces'
+import { IResponse, IFormateDataParams, ICreateExpense } from '../interfaces'
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
@@ -32,6 +32,17 @@ export class SomeService {
     salt: string,
   ) {
     return (await this.generatePassword(inputPassowrd, salt)) == dataPassword
+  }
+
+  async getDefaultExpense(
+    amount: number,
+    type: 'saving' | 'deposit',
+  ): Promise<ICreateExpense> {
+    return {
+      amount,
+      description: type == 'deposit' ? 'Salary' : 'Saving',
+      type,
+    }
   }
 
   async FormateData<D>({

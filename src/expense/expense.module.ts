@@ -9,5 +9,6 @@ import { SomeService, CronService } from 'src/util/'
   imports: [TypeOrmModule.forFeature([Expense, User])],
   controllers: [ExpenseController],
   providers: [ExpenseService, SomeService, CronService],
+  exports: [ExpenseService],
 })
 export class ExpenseModule {}

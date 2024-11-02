@@ -33,7 +33,7 @@ export class ExpenseService {
     try {
       user = await this.userRepository.findOne({ where: { id } })
 
-      if (object.amount > user.balance && object.type == 'transfer')
+      if (object.amount > user.balance && object.type == 'expense')
         throw new BadRequestException('Insufficient Funds')
 
       expense = this.expenseRepository.create({
@@ -42,7 +42,7 @@ export class ExpenseService {
       })
 
       if (object.expenseDate) {
-        name = `${expense.type} pay/deposit, expense: ${expense.id} `
+        name = `${expense.type} pay/deposit, expense: ${expense.id}`
         expense.status = 'pending'
 
         await this.cronService.createDateCronJob(

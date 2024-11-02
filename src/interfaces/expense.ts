@@ -3,7 +3,7 @@ import { User } from '../entities'
 export interface ICreateExpense {
   description: string
   expenseDate?: Date
-  type?: 'transfer' | 'deposit' | 'expense' | 'saving'
+  type?: 'deposit' | 'expense' | 'saving'
   amount: number
 }
 

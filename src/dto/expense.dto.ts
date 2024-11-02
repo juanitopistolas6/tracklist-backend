@@ -20,7 +20,7 @@ export class ExpenseDto {
 
   @IsOptional()
   @IsEnum(['transfer', 'deposit', 'expense', 'saving'])
-  type?: 'transfer' | 'deposit' | 'expense' | 'saving'
+  type?: 'deposit' | 'expense' | 'saving'
 
   @IsNotEmpty()
   @IsNumber()

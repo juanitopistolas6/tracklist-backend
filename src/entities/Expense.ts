@@ -23,7 +23,7 @@ export class Expense {
   available: boolean
 
   @Column({ nullable: true, default: 'expense' })
-  type: 'transfer' | 'deposit' | 'expense' | 'saving'
+  type: 'deposit' | 'expense' | 'saving'
 
   @Column({ nullable: true, default: 'success' })
   status: 'pending' | 'success'

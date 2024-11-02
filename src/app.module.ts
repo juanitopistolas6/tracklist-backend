@@ -6,6 +6,7 @@ import { User, Expense, Saving } from './entities'
 import { UserModule } from './user/user.module'
 import { ExpenseModule } from './expense/expense.module'
 import { ScheduleModule } from '@nestjs/schedule'
+import { SavingModule } from './saving/saving.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     AuthModule,
     UserModule,
     ExpenseModule,
+    SavingModule,
   ],
 })
 export class AppModule {}
