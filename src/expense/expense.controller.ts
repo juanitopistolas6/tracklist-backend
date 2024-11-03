@@ -57,6 +57,12 @@ export class ExpenseController {
     }
   }
 
+  @Get('jobs')
+  @Authorization(true)
+  async getJobs() {
+    return this.cronService.Jobs()
+  }
+
   @Get('interval')
   @Authorization(true)
   async getExpensesInterval(

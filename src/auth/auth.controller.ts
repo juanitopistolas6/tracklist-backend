@@ -20,6 +20,7 @@ export class AuthController {
   @Authorization(false)
   async createUser(@Body() user: UserDto): Promise<IResponse<User>> {
     try {
+      console.log('ok???')
       const newUser = await this.authService.createUser(user)
 
       delete newUser.password

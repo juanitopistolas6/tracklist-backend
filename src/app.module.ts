@@ -6,17 +6,17 @@ import { User, Expense, Saving } from './entities'
 import { UserModule } from './user/user.module'
 import { ExpenseModule } from './expense/expense.module'
 import { ScheduleModule } from '@nestjs/schedule'
-import { SavingModule } from './saving/saving.module';
+import { SavingModule } from './saving/saving.module'
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: 'mysql',
       port: 3306,
       username: 'root',
-      password: '6442340710juan1',
+      password: 'new_root_password',
       synchronize: true,
       entities: [User, Expense, Saving],
       database: 'trackerlist',

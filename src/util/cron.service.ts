@@ -47,11 +47,12 @@ export class CronService {
 
     try {
       const job = new CronJob(date, jobCallback, null, true)
+
       this.schedulerRegistry.addCronJob(name, job)
+
+      this.logger.log(`cronjob creado: ${name}`)
     } catch (error) {
-      throw new BadRequestException(
-        `Failed to create cron job "${name}": ${error.message}`,
-      )
+      this.logger.error(`Failed to create cron job "${name}": ${error.message}`)
     }
   }
 
@@ -64,7 +65,6 @@ export class CronService {
         async function () {
           try {
             await callback()
-            console.log('ejecutado?')
           } catch (e) {
             this.logger.log(e.message)
           }
@@ -75,11 +75,26 @@ export class CronService {
 
       this.schedulerRegistry.addCronJob(name, job)
 
-      console.log(`cronjob creado: ${name}`)
+      this.logger.log(`cronjob creado: ${name}`)
     } catch (e) {
       console.log(e.message)
       throw new BadRequestException(e.message)
     }
+  }
+
+  Jobs() {
+    const jobs = this.schedulerRegistry.getCronJobs()
+
+    const jobNames = []
+
+    jobs.forEach((job, name) => {
+      jobNames.push({
+        name: name,
+        nextExecution: job.nextDates()?.toString(), // Proxima ejecución (opcional)
+      })
+    })
+
+    return jobNames
   }
 
   deleteCronJob(cronName: string) {

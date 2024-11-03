@@ -1,0 +1,41 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    ports:
+      - 3305:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=new_root_password 
+      - MYSQL_DATABASE=trackerlist
+    healthcheck:
+      test: mysqladmin ping -h localhost -u root -pnew_root_password
+      timeout: 10s
+      interval: 3s
+      retries: 10
+    volumes:
+    - ./db:/var/lib/mysql
+    networks:
+      - my-network
+  
+  tracker-list:
+    container_name: tracker-list
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/app/tracker-list
+      - /app/tracker-list/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
+    
