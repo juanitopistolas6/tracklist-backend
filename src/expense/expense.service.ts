@@ -19,10 +19,22 @@ export class ExpenseService {
     private dataSource: DataSource,
   ) {}
 
-  async Expenses(idAuthor: string) {
-    return this.expenseRepository.find({
+  async Expenses(idAuthor: string, page: number, limit: number) {
+    const [results, total] = await this.expenseRepository.findAndCount({
       where: { author: { id: idAuthor }, available: true },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        expenseDate: 'DESC',
+      },
     })
+
+    return {
+      expenses: results,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    }
   }
 
   async createExpense(object: ICreateExpense, id: string) {

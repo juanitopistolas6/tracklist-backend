@@ -14,9 +14,10 @@ import { SomeService } from '../util/some.service'
 import { ExpenseService } from './expense.service'
 import { Authorization, GetUser } from '../decorator'
 import { ExpenseDto } from '../dto/expense.dto'
-import { DateExpense, DateQueryDto } from '../dto'
+import { DateExpense, DateQueryDto, PaginationDto } from '../dto'
 import { Expense } from '../entities'
 import { CronService } from '../util'
+import { IPagination } from 'src/interfaces'
 
 @Controller('expense')
 @UseGuards(AuthGuard)
@@ -29,10 +30,15 @@ export class ExpenseController {
 
   @Get()
   @Authorization(true)
-  async getExpenses(@GetUser('id') idAuthor: string) {
-    const expenses = await this.expenseService.Expenses(idAuthor)
+  async getExpenses(
+    @GetUser('id') idAuthor: string,
+    @Query() query: PaginationDto,
+  ) {
+    const { limit, page } = query
 
-    return this.someService.FormateData<Expense[]>({
+    const expenses = await this.expenseService.Expenses(idAuthor, page, limit)
+
+    return this.someService.FormateData<IPagination>({
       data: expenses,
       message: 'EXPENSES_RETURNED',
     })
