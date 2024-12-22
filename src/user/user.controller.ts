@@ -1,4 +1,4 @@
-import { Body, Controller, Put, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common'
 import { AuthGuard } from 'src/guards/auth.guard'
 import { UserService } from './user.service'
 import { SomeService } from 'src/util/some.service'
@@ -6,6 +6,7 @@ import { Authorization, GetUser } from 'src/decorator'
 import { SalaryDto } from 'src/dto/salary.dto'
 import { User } from 'src/entities'
 import { PaymentDaysDto } from 'src/dto'
+import { UserStats } from 'src/interfaces'
 
 @Controller('user')
 @UseGuards(AuthGuard)
@@ -52,6 +53,21 @@ export class UserController {
       return this.someService.FormateData<User>({
         data: clientUpdated,
         message: 'PAYMENT_DAYS_UPDATED',
+      })
+    } catch (e) {
+      return this.someService.FormateData({ error: true, message: e.message })
+    }
+  }
+
+  @Get('stats')
+  @Authorization(true)
+  async getStats(@GetUser('id') id: string) {
+    try {
+      const stats = await this.userService.GetStats(id)
+
+      return this.someService.FormateData<UserStats>({
+        data: stats,
+        message: 'STATS_FETCHED',
       })
     } catch (e) {
       return this.someService.FormateData({ error: true, message: e.message })

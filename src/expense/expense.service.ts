@@ -128,18 +128,17 @@ export class ExpenseService {
   }
 
   async expenseByDate(date: Date, idAuthor: string) {
-    const startOfDay = new Date(date)
-    startOfDay.setHours(0, 0, 0, 0)
-
-    const endOfDay = new Date(date)
-    endOfDay.setHours(23, 59, 59, 999)
+    const endOfDay = new Date(
+      date.getTime() + (23 * 60 * 60 + 59 * 60 + 59) * 1000,
+    )
 
     const expense = await this.expenseRepository.find({
       where: {
-        expenseDate: Between(startOfDay, endOfDay),
+        expenseDate: Between(date, endOfDay),
         available: true,
         author: { id: idAuthor },
       },
+      order: { expenseDate: 'ASC' },
     })
 
     if (expense.length < 1)
@@ -158,6 +157,7 @@ export class ExpenseService {
           author: { id: idAuthor },
           available: true,
         },
+        order: { expenseDate: 'ASC' },
       })
 
       if (!expense)
