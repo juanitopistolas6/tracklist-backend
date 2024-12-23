@@ -173,7 +173,9 @@ export class ExpenseService {
 
   async deleteExpense(authorId: string, id: string) {
     try {
-      const user = await this.userRepository.findOne({ where: { id } })
+      const user = await this.userRepository.findOne({
+        where: { id: authorId },
+      })
       const expense = await this.getExpense(id, authorId)
 
       return this.handleExpense('delete', user, expense)
