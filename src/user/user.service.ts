@@ -34,7 +34,7 @@ export class UserService {
     try {
       const client = await this.userRepository.findOne({ where: { id } })
       const expenses = await this.expenseRepository.find({
-        where: { author: { id }, available: true },
+        where: { author: { id }, available: true, status: 'success' },
       })
 
       let totalExpenses = 0

@@ -53,7 +53,7 @@ export class ExpenseService {
         author: { id },
       })
 
-      if (object.expenseDate) {
+      if (object.expenseDate > new Date()) {
         name = `${expense.type} pay/deposit, expense: ${expense.id}`
         expense.status = 'pending'
 
@@ -81,7 +81,7 @@ export class ExpenseService {
     try {
       if (!user || !expense) throw new NotFoundException('Data not found')
 
-      if (expense.status == 'pending') {
+      if (expense.status == 'pending' && type !== 'delete') {
         await queryRunner.manager.save(User, user)
         await queryRunner.manager.save(Expense, expense)
 
@@ -110,6 +110,9 @@ export class ExpenseService {
   }
 
   calculateBalances(user: User, expense: Expense, type: ExpenseTypes) {
+    if (expense.status == 'pending')
+      return { balance: user.balance, savings: user.savings }
+
     const adjusment = this.getBalanceAdjustment(expense, type)
 
     const balance = user.balance + (expense.type === 'saving' ? 0 : adjusment)
@@ -180,6 +183,7 @@ export class ExpenseService {
 
       return this.handleExpense('delete', user, expense)
     } catch (e) {
+      console.log(e.message)
       throw new BadRequestException(e.message)
     }
   }
@@ -206,10 +210,40 @@ export class ExpenseService {
     try {
       const expense = await this.getExpense(expenseId, authorId)
 
+      if (expense.type !== expenseEdit.type)
+        throw new BadRequestException(
+          'You cannot change the type of the expense',
+        )
+
+      const user = await this.userRepository.findOne({
+        where: { id: authorId },
+      })
+
+      const balance = user.balance + this.calculateEdit(expense, expenseEdit)
+
+      if (balance < 0) throw new BadRequestException('Insufficient Funds')
+
+      await this.userRepository.save({
+        ...user,
+        balance,
+      })
+
       return this.expenseRepository.save({ ...expense, ...expenseEdit })
     } catch (e) {
       throw new BadRequestException(e.message)
     }
+  }
+
+  calculateEdit(expense: Expense, expenseEdit: ICreateExpense) {
+    let difference = Math.abs(expense.amount - expenseEdit.amount)
+
+    difference = expense.amount > expenseEdit.amount ? -difference : difference
+
+    difference = expense.type == 'expense' ? -difference : difference
+
+    console.log(difference)
+
+    return difference
   }
 
   async cronExpense(userId: string, expenseId: string) {
