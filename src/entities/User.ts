@@ -35,7 +35,7 @@ export class User {
   @Column({ unique: true })
   user: string
 
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   balance: number
 
   @Column({ type: 'boolean', default: false, nullable: true })
