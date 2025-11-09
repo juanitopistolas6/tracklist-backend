@@ -14,7 +14,7 @@ import { SavingModule } from './saving/saving.module'
     TypeOrmModule.forRoot({
       type: 'mysql',
       url: process.env.RAILWAY_MYSQL,
-      synchronize: false,
+      synchronize: true,
       entities: [User, Expense, Saving],
     }),
     ConfigModule.forRoot({ isGlobal: true }),
